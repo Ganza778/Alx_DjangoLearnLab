@@ -5,6 +5,8 @@ from .models import Library
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import render
 
 def register(request):
     if request.method == 'POST':
@@ -59,3 +61,15 @@ class LibraryDetailView(DetailView):
     model = Library
     template_name = 'relationship_app/library_detail.html'  # required by the checker
     context_object_name = 'library'
+    
+    @user_passes_test(lambda u: hasattr(u, 'userprofile') and u.userprofile.role == 'Admin')
+def admin_view(request):
+    return render(request, 'relationship_app/admin_view.html')
+
+@user_passes_test(lambda u: hasattr(u, 'userprofile') and u.userprofile.role == 'Librarian')
+def librarian_view(request):
+    return render(request, 'relationship_app/librarian_view.html')
+
+@user_passes_test(lambda u: hasattr(u, 'userprofile') and u.userprofile.role == 'Member')
+def member_view(request):
+    return render(request, 'relationship_app/member_view.html')
