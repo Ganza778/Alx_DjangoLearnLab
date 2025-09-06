@@ -7,6 +7,7 @@ from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render
+from django.contrib.auth.decorators import permission_required
 
 def register(request):
     if request.method == 'POST':
