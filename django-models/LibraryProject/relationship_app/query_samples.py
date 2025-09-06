@@ -1,11 +1,11 @@
 import os
 import django
 
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LibraryProject.settings')
 django.setup()
 
 from relationship_app.models import Author, Book, Library, Librarian
+
 
 author_name = "J.K. Rowling"
 try:
@@ -26,8 +26,9 @@ try:
 except Library.DoesNotExist:
     print(f"No library found with the name {library_name}")
 
+
 try:
-    librarian = library.librarian  
+    librarian = Librarian.objects.get(library=library)
     print(f"Librarian of {library_name}: {librarian.name}")
 except Librarian.DoesNotExist:
     print(f"No librarian assigned to {library_name}")
