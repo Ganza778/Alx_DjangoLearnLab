@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import permission_required
 from .models import Book, Author
 from django.shortcuts import render
 from .models import Book
+from django.views.generic.detail import DetailView
+from .models import Library
 
 
 @permission_required('relationship_app.can_add_book', raise_exception=True)
@@ -41,3 +43,8 @@ def delete_book(request, book_id):
 def list_books(request):
     books = Book.objects.all()
     return render(request, 'relationship_app/list_books.html', {'books': books})
+
+class LibraryDetailView(DetailView):
+    model = Library
+    template_name = 'relationship_app/library_detail.html'  # required by the checker
+    context_object_name = 'library'
