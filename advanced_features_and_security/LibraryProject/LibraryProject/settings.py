@@ -25,7 +25,36 @@ SECRET_KEY = 'django-insecure-m%ssolm@bi9=@21ud877j#27g369nurg78$gp%&dk27284dm31
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["yourdomain.com", "localhost", "127.0.0.1"]
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+ALLOWED_HOSTS = ["yourdomain.com", "localhost", "127.0.0.1"]
+
+# Security Middleware Settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+
+# Enforce HTTPS for cookies
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# Content Security Policy via django-csp (if installed)
+# Otherwise can add via middleware in Step 4
+INSTALLED_APPS += [
+    # "csp",  # uncomment if using django-csp
+]
+
+MIDDLEWARE += [
+    # "csp.middleware.CSPMiddleware",  # enable if django-csp is installed
+]
+
+# Example CSP configuration
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com")
+CSP_SCRIPT_SRC = ("'self'",)
+CSP_IMG_SRC = ("'self'", "data:")
 
 
 # Application definition
@@ -49,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "LibraryProject.middleware.CSPMiddleware",
 ]
 
 ROOT_URLCONF = 'LibraryProject.urls'
