@@ -12,9 +12,25 @@ class BookListView(generics.ListAPIView):
     List all books.
     Open to all users (read-only).
     """
+        """
+    API view to retrieve a list of books with capabilities to:
+    - Filter by title, author name, and publication year using query parameters.
+    - Search books by partial matches in title and author name.
+    - Order results by title or publication year.
+    
+    Query params examples:
+    - Filtering: ?publication_year=2020&author__name=Jane
+    - Search: ?search=Python
+    - Ordering: ?ordering=-publication_year
+    """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.AllowAny]
+    
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['title', 'author__name', 'publication_year']
+    search_fields = ['title', 'author__name']
+    ordering_fields = ['title', 'publication_year']
 
 
 class BookDetailView(generics.RetrieveAPIView):
