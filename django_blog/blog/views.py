@@ -7,6 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserChangeForm
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Post
+from django.db.models import Q
 from .forms import PostForm
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -14,6 +15,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Post, Comment
 from django.urls import reverse
 from .forms import PostForm, CommentForm
+from taggit.models import Tag
 
 # Registration view
 def home_view(request):
@@ -229,3 +231,19 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def get_success_url(self):
         return self.object.post.get_absolute_url()
+    
+
+def posts_by_tag(request, tag_slug):
+    tag = Tag.objects.get(slug=tag_slug)
+    posts = Post.objects.filter(tags__name__in=[tag.name])
+    return render(request, 'blog/posts_by_tag.html', {'posts': posts, 'tag': tag})
+
+def search_posts(request):
+        query = request.GET.get('q', '')  # get the search term
+        posts = Post.objects.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query) |
+            Q(tags__name__icontains=query)  # if using django-taggit
+        ).distinct()
+        
+        return render(request, 'blog/search_results.html', {'posts': posts, 'query': query})
