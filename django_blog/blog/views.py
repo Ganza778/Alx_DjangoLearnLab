@@ -7,6 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserChangeForm
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Post
+from .forms import PostForm
 
 # Registration view
 def home_view(request):
