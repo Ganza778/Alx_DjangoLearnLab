@@ -6,6 +6,37 @@ from .models import CustomUser
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
+from rest_framework import status
+
+User = get_user_model()
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def follow_user(request, user_id):
+    try:
+        target_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if target_user == request.user:
+        return Response({'error': "You can't follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+    request.user.follow(target_user)
+    return Response({'message': f'You followed {target_user.username}'})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unfollow_user(request, user_id):
+    try:
+        target_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    request.user.unfollow(target_user)
+    return Response({'message': f'You unfollowed {target_user.username}'})
 
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
