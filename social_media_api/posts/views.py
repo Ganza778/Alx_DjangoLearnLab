@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from rest_framework.generics import get_object_or_404
 from rest_framework import viewsets, permissions, filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -54,7 +53,7 @@ class LikePostView(generics.GenericAPIView):
 
     def post(self, request, pk):
         user = request.user
-        post = get_object_or_404(Post, pk=pk)
+        post = generics.get_object_or_404(Post, pk=pk)
 
         like, created = Like.objects.get_or_create(user=request.user, post=post)
         if not created:
@@ -75,7 +74,7 @@ class UnlikePostView(generics.GenericAPIView):
 
     def post(self, request, pk):
         user = request.user
-        post = get_object_or_404(Post, pk=pk)
+        post = generics.get_object_or_404(Post, pk=pk)
 
         deleted, _ = Like.objects.filter(user=user, post=post).delete()
         if not deleted:
