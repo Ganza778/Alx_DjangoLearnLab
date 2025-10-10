@@ -1,4 +1,5 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
+from rest_framework.generics import get_object_or_404
 from rest_framework import viewsets, permissions, filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 from .models import Post, Comment, Like  # Added Like model import
 from .serializers import PostSerializer, CommentSerializer
 from notifications.utils import create_notification
+from notifications.models import Notification
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -54,12 +56,17 @@ class LikePostView(generics.GenericAPIView):
         user = request.user
         post = get_object_or_404(Post, pk=pk)
 
-        like, created = Like.objects.get_or_create(user=user, post=post)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
         if not created:
             return Response({"detail": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if post.author != user:
-            create_notification(recipient=post.author, actor=user, verb="liked your post", target=post)
+            if post.author != user:
+               Notification.objects.create(  # ✅ required pattern
+                recipient=post.author,
+                actor=user,
+                verb="liked your post",
+                target=post
+            )
 
         return Response({"detail": "Post liked."}, status=status.HTTP_201_CREATED)
 
