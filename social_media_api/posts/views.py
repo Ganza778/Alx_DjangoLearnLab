@@ -1,10 +1,10 @@
-from django.shortcuts import render
-from rest_framework import viewsets, permissions, filters
-from .models import Post, Comment
-from .serializers import PostSerializer, CommentSerializer
+from django.shortcuts import render, get_object_or_404
+from rest_framework import viewsets, permissions, filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from .models import Post, Comment, Like  # Added Like model import
+from .serializers import PostSerializer, CommentSerializer
 from notifications.utils import create_notification
 
 @api_view(['GET'])
@@ -46,22 +46,18 @@ class FeedView(generics.ListAPIView):
         user = self.request.user
         following_users = user.following.all()
         return Post.objects.filter(author__in=following_users).order_by('-created_at')
-    
+
 class LikePostView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         user = request.user
-        try:
-            post = Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
-            return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+        post = get_object_or_404(Post, pk=pk)
 
         like, created = Like.objects.get_or_create(user=user, post=post)
         if not created:
             return Response({"detail": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create notification for post author if liker isn't the author
         if post.author != user:
             create_notification(recipient=post.author, actor=user, verb="liked your post", target=post)
 
@@ -72,10 +68,7 @@ class UnlikePostView(generics.GenericAPIView):
 
     def post(self, request, pk):
         user = request.user
-        try:
-            post = Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
-            return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+        post = get_object_or_404(Post, pk=pk)
 
         deleted, _ = Like.objects.filter(user=user, post=post).delete()
         if not deleted:
